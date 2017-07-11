@@ -1,0 +1,28 @@
+NIRS: False
+Observer: Kasia
+Data: .06.2017
+
+Training1_trials_congruent: 0
+Training1_trials_incongruent: 0
+Training1_trials_neutral: 40
+
+Training2_trials_congruent: 20
+Training2_trials_incongruent: 20
+Training2_trials_neutral: 0
+
+Training_Resp_time: 4
+Training_Wait_time: 1
+
+Number_of_blocks: 1
+Experiment_trials_congruent: 80
+Experiment_trials_incongruent: 80
+Experiment_trials_neutral: 0
+
+Experiment_Resp_time: 3
+Experiment_Wait_time: 11
+
+Jitter: 2
+
+Fix_time: 1
+Feedb: True
+Feedb_time: 1
