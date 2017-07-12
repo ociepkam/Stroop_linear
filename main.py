@@ -54,8 +54,6 @@ VISUAL_OFFSET = 50
 FIGURES_SCALE = 0.4
 RESULTS = [['EXP', 'TRIAL_TYPE', 'TEXT', 'COLOR', 'WAIT', 'RESPTIME', 'RT', 'TRUE_KEY', 'ANSWER', 'CORR']]
 POSSIBLE_KEYS = ['z', 'x', 'c', 'b', 'n', 'm']
-LEFT_KEYS = POSSIBLE_KEYS[:3]
-RIGHT_KEYS = POSSIBLE_KEYS[3:]
 # TRIGGER_LIST = []
 
 
@@ -125,20 +123,25 @@ def show_info_2(win, info, show_time):
     win.flip()
 
 
-def prepare_key_matching_text(colors_key):
+def prepare_key_matching_text(colors_text_to_keys_dict):
     text = ""
-    for color, key in zip(colors_key, POSSIBLE_KEYS):
-        text += "klawisz {} gdy wyswietlono napis w kolorze {}\n".format(key.upper(), color)
+    for color, keys in colors_text_to_keys_dict.iteritems():
+        if len(keys) == 1:
+            text += "klawisz {} gdy wyswietlono napis w kolorze {}\n".format(keys[0].upper(), color)
+        elif len(keys) == 2:
+            text += "klawisz {} lub {} gdy wyswietlono napis w kolorze {}\n".format(keys[0].upper(), keys[1].upper(), color)
+        else:
+            raise Exception('Wrong number of keys for good reactions')
     return text
 
 
-def feedb(ans, true_key):
+def feedb(ans, true_keys):
     if data['Feedb']:
-        if not ans:
+        if ans == '-':
             feedb_msg = no_feedb
-        elif ans == true_key:
+        elif ans in true_keys:
             feedb_msg = pos_feedb
-        elif ans != true_key:
+        elif ans not in true_keys:
             feedb_msg = neg_feedb
         else:
             raise Exception("Wrong feedb")
@@ -147,7 +150,7 @@ def feedb(ans, true_key):
 
 
 def prepare_trial_info(trial):
-    true_key = KEYS[trial['color']]
+    true_keys = trial['good_keys']
     reaction_time = -1
     if trial['trial_type'] == 'congruent':
         triggers = TriggersCongruent
@@ -161,7 +164,7 @@ def prepare_trial_info(trial):
         triggers = TriggersIncongruent21
     else:
         triggers = TriggersNeutral
-    return true_key, reaction_time, triggers
+    return true_keys, reaction_time, triggers
 
 
 def abort_with_error(err):
@@ -194,6 +197,7 @@ PART_ID = str(info['Part_id'] + info['Part_sex'] + info['Part_age'])
 
 logging.LogFile('results/' + PART_ID + '.log', level=logging.INFO)
 logging.info(info)
+
 # prepare screen
 SCREEN_RES = get_screen_res()
 win = visual.Window(SCREEN_RES.values(), fullscr=True, monitor='testMonitor', units='pix', screen=0, color='#262626')
@@ -206,14 +210,12 @@ neg_feedb = visual.TextStim(win, text=u'Odpowied\u017A niepoprawna', color=TEXT_
 no_feedb = visual.TextStim(win, text=u'Nie udzieli\u0142e\u015B odpowiedzi', color=TEXT_COLOR, height=TEXT_SIZE)
 
 # prepare trials
-training_trials, experiment_trials, colors_to_key, colors_names = prepare_exp(data, win, TEXT_SIZE)
+training_trials, experiment_trials, colors_text_to_keys_dict, colors_text_to_show = prepare_exp(data, win, TEXT_SIZE, POSSIBLE_KEYS)
 blocks = numpy.array_split(experiment_trials, data['Number_of_blocks'])
 
-KEYS = {color: key for color, key in zip(colors_names, POSSIBLE_KEYS)}
+keys_mapping_text = prepare_key_matching_text(colors_text_to_keys_dict)
 
-keys_mapping_text = prepare_key_matching_text(colors_to_key)
-
-key_labes = visual.TextStim(win=win, text='{0}    {1}    {2}    {3}'.format(*colors_to_key), color=TEXT_COLOR,
+key_labes = visual.TextStim(win=win, text='{0}  {1}  {2}  {3}  {4}  {5}'.format(*colors_text_to_show), color=TEXT_COLOR,
                             wrapWidth=SCREEN_RES['width'],  height=TEXT_SIZE, pos=(0, -7 * VISUAL_OFFSET))
 
 resp_clock = core.Clock()
@@ -225,7 +227,7 @@ for idx, block in enumerate(training_trials):
     show_info(win, join('.', 'messages', 'training{}.txt'.format(idx+1)), insert=keys_mapping_text)
     for trial in block:
         # prepare trial
-        true_key, reaction_time, triggers = prepare_trial_info(trial)
+        true_keys, reaction_time, triggers = prepare_trial_info(trial)
 
         # show fix
         show_info_2(win=win, info=fixation, show_time=data['Fix_time'])
@@ -239,7 +241,7 @@ for idx, block in enumerate(training_trials):
         win.flip()
 
         while resp_clock.getTime() < data['Training_Resp_time']:
-            key = event.getKeys(keyList=KEYS.values())
+            key = event.getKeys(keyList=POSSIBLE_KEYS)
             if key:
                 reaction_time = resp_clock.getTime()
                 break
@@ -256,12 +258,12 @@ for idx, block in enumerate(training_trials):
             ans = '-'
         RESULTS.append(
             ['training', trial['trial_type'], trial['text'], trial['color'], data['Training_Wait_time'],
-             data['Training_Resp_time'], reaction_time, true_key, ans, ans == true_key])
+             data['Training_Resp_time'], reaction_time, true_keys, ans, ans in true_keys])
         check_exit()
 
         # show feedb
         if data['Feedb']:
-            feedb(key, [true_key])
+            feedb(ans, true_keys)
             check_exit()
 
         # wait
@@ -275,7 +277,7 @@ show_info(win, join('.', 'messages', 'instruction.txt'), insert=keys_mapping_tex
 for idx, block in enumerate(blocks):
     for trial in block:
         # prepare trial
-        true_key, reaction_time, triggers = prepare_trial_info(trial)
+        true_keys, reaction_time, triggers = prepare_trial_info(trial)
         jitter = random.random() * data['Jitter']
 
         # show fix
@@ -292,14 +294,11 @@ for idx, block in enumerate(blocks):
             NIRS.activate_line(triggers.ProblemAppear)
 
         while resp_clock.getTime() < data['Experiment_Resp_time']:
-            key = event.getKeys(keyList=KEYS.values())
+            key = event.getKeys(keyList=POSSIBLE_KEYS)
             if key:
                 reaction_time = resp_clock.getTime()
                 if data['NIRS']:
-                    if key[0] == true_key:
-                        NIRS.activate_line(triggers.ParticipantReactGood)
-                    else:
-                        NIRS.activate_line(triggers.ParticipantReactBad)
+                    NIRS.activate_line(triggers.ParticipantReact)
                 break
             check_exit()
             win.flip()
@@ -315,7 +314,7 @@ for idx, block in enumerate(blocks):
 
         RESULTS.append(
             ['experiment', trial['trial_type'], trial['text'], trial['color'], data['Experiment_Wait_time']+jitter,
-             data['Experiment_Resp_time'], reaction_time, true_key, ans, ans == true_key])
+             data['Experiment_Resp_time'], reaction_time, true_keys, ans, ans in true_keys])
         check_exit()
 
         # wait
