@@ -31,9 +31,9 @@ TEXT_COLOR = '#f2f2f2'
 VISUAL_OFFSET = 50
 FIGURES_SCALE = 0.4
 RESULTS = [['EXP', 'TRIAL_TYPE', 'TEXT', 'COLOR', 'WAIT', 'RESPTIME', 'RT', 'TRUE_KEY', 'ANSWER', 'CORR']]
-POSSIBLE_KEYS = ['z', 'x', 'n', 'm']
-LEFT_KEYS = POSSIBLE_KEYS[:2]
-RIGHT_KEYS = POSSIBLE_KEYS[2:]
+POSSIBLE_KEYS = ['z', 'x', 'c', 'b', 'n', 'm']
+LEFT_KEYS = POSSIBLE_KEYS[:3]
+RIGHT_KEYS = POSSIBLE_KEYS[3:]
 # TRIGGER_LIST = []
 
 
@@ -188,8 +188,8 @@ key_labes = visual.TextStim(win=win, text='{0}    {1}    {2}    {3}'.format(*col
 
 resp_clock = core.Clock()
 
-# ----------------------- Start Stroop ----------------------- #
 
+# ----------------------- Start Stroop ----------------------- #
 
 for idx, block in enumerate(training_trials):
     show_info(win, join('.', 'messages', 'training{}.txt'.format(idx+1)), insert=keys_mapping_text)

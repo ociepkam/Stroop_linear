@@ -7,8 +7,8 @@ stim_neutral = "HHHHH"
 colors_text = stim_text.keys()
 random.shuffle(colors_text)
 colors_names = [stim_text[color] for color in colors_text]
-left_hand = colors_text[:2]
-right_hand = colors_text[2:]
+left_hand = colors_text[:3]
+right_hand = colors_text[3:]
 
 
 def prepare_trial(trial_type, win, text_size):
@@ -32,19 +32,31 @@ def prepare_trial(trial_type, win, text_size):
     return {'trial_type': trial_type, 'text': text, 'color': color, 'stim': stim}
 
 
-def prepare_part(trials_congruent, trials_incongruent, trials_neutral, win, text_size):
-    trials = ['congruent'] * trials_congruent + ['incongruent'] * trials_incongruent + ['neutral'] * trials_neutral
+def prepare_part(trials_congruent, trials_incongruent_1_1, trials_incongruent_2_2, trials_incongruent_1_2,
+                 trials_incongruent_2_1, trials_neutral, win, text_size):
+    trials = ['congruent'] * trials_congruent + \
+             ['incongruent_1_1'] * trials_incongruent_1_1 + \
+             ['incongruent_2_2'] * trials_incongruent_2_2 + \
+             ['incongruent_1_2'] * trials_incongruent_1_2 + \
+             ['incongruent_2_1'] * trials_incongruent_2_1 + \
+             ['neutral'] * trials_neutral
     random.shuffle(trials)
     return [prepare_trial(trial_type, win, text_size) for trial_type in trials]
 
 
-def prepare_exp(data, win, text_size):
-    training1_trials = prepare_part(data['Training1_trials_congruent'], data['Training1_trials_incongruent'],
-                                    data['Training1_trials_neutral'], win, text_size)
+def prepare_exp(data, win, text_size, keys):
+    training1_trials = prepare_part(data['Training1_trials_congruent'], data['Training1_trials_incongruent_1_1'],
+                                    data['Training1_trials_incongruent_2_2'], data['Training1_trials_incongruent_1_2'],
+                                    data['Training1_trials_incongruent_2_1'], data['Training1_trials_neutral'], win,
+                                    text_size)
 
-    training2_trials = prepare_part(data['Training2_trials_congruent'], data['Training2_trials_incongruent'],
-                                    data['Training2_trials_neutral'], win, text_size)
-    experiment_trials = prepare_part(data['Experiment_trials_congruent'], data['Experiment_trials_incongruent'],
-                                     data['Experiment_trials_neutral'], win, text_size)
+    training2_trials = prepare_part(data['Training2_trials_congruent'], data['Training2_trials_incongruent_1_1'],
+                                    data['Training2_trials_incongruent_2_2'], data['Training2_trials_incongruent_1_2'],
+                                    data['Training2_trials_incongruent_2_1'], data['Training2_trials_neutral'], win,
+                                    text_size)
+    experiment_trials = prepare_part(data['Experiment_trials_congruent'], data['Experiment_trials_incongruent_1_1'],
+                                     data['Experiment_trials_incongruent_2_2'], data['Experiment_trials_incongruent_1_2'],
+                                     data['Experiment_trials_incongruent_2_1'], data['Experiment_trials_neutral'], win,
+                                     text_size)
 
     return [training1_trials, training2_trials], experiment_trials, colors_text, colors_names
