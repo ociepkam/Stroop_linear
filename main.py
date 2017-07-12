@@ -12,17 +12,39 @@ import time
 import numpy
 import random
 
+# Incongruent_x_y:
+# x - possible reactions
+# y - conflict reactions
 
-class CongruentTriggers(object):
+
+class TriggersNeutral(object):
     ProblemAppear = 1
-    ParticipantReactGood = 2
-    ParticipantReactBad = 3
+    ParticipantReact = 7
 
 
-class IncongruentTriggers(object):
+class TriggersCongruent(object):
+    ProblemAppear = 2
+    ParticipantReact = 7
+
+
+class TriggersIncongruent11(object):
+    ProblemAppear = 3
+    ParticipantReact = 7
+
+
+class TriggersIncongruent22(object):
     ProblemAppear = 4
-    ParticipantReactGood = 5
-    ParticipantReactBad = 6
+    ParticipantReact = 7
+
+
+class TriggersIncongruent12(object):
+    ProblemAppear = 5
+    ParticipantReact = 7
+
+
+class TriggersIncongruent21(object):
+    ProblemAppear = 6
+    ParticipantReact = 7
 
 
 # GLOBALS
@@ -128,9 +150,17 @@ def prepare_trial_info(trial):
     true_key = KEYS[trial['color']]
     reaction_time = -1
     if trial['trial_type'] == 'congruent':
-        triggers = CongruentTriggers
+        triggers = TriggersCongruent
+    elif trial['trial_type'] == 'incongruent_1_1':
+        triggers = TriggersIncongruent11
+    elif trial['trial_type'] == 'incongruent_2_2':
+        triggers = TriggersIncongruent22
+    elif trial['trial_type'] == 'inicongruent_1_2':
+        triggers = TriggersIncongruent12
+    elif trial['trial_type'] == 'incongruent_2_1':
+        triggers = TriggersIncongruent21
     else:
-        triggers = IncongruentTriggers
+        triggers = TriggersNeutral
     return true_key, reaction_time, triggers
 
 
